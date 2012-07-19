@@ -2,9 +2,9 @@
 (function (window) {
 	
 	var lispx = { },
-		lex, parse, symbols, leftFold;
+		macros, symbols;
 	
-	foldLeft = function (list, init,  lambda) {
+	function foldLeft(list, init,  lambda) {
 		var i;
 		for (i = 0; i < list.length; i++) {
 			init = lambda(init, list[i]);
@@ -30,6 +30,35 @@
 				return arguments[0];
 			},
 			tail[1]
+		];
+	};
+	macros['if'] = function (tail) {
+		var thenExpression, elseExpression;
+		
+		if (tail.length !== 2 && tail.length !== 3) {
+			throw '\'if\' requires exactly two or three arguments';
+		}
+		
+		thenExpression = macroExpand(tail[1]);
+		if (tail.length === 3) {
+			elseExpression = macroExpand(tail[2]);
+		}
+		
+		return [
+			function () {
+				// redundant if..
+				if (arguments.length !== 1) {
+					throw '\'if\' requires condition';
+				}
+				if (arguments[0] === true) {
+					return evaluate(thenExpression);
+				}
+				else if (elseExpression) {
+					return evaluate(elseExpression);
+				}
+				return 'null';
+			},
+			tail[0]
 		];
 	};
 	
@@ -147,7 +176,7 @@
 	
 	// input: string of lisp code
 	// output: list of tokens
-	lex = function (source) {
+	function lex(source) {
 		var tokens = [],
 			STATE = {
 				NORMAL: 0,
@@ -228,7 +257,7 @@
 	// input: list of tokens
 	// output: syntax tree
 	// errors: thrown on syntax violations
-	parse = function (tokens) {
+	function parse(tokens) {
 		
 		var expressions = [],
 			expressionStack = [],
