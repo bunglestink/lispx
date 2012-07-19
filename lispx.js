@@ -65,11 +65,11 @@
 	// built in symbols
 	symbols = { };
 	
-	symbols['def'] = function () {
-		if (arguments.length !== 2) {
-			throw 'let requires exactly two arguments';
+	symbols['do'] = function () {
+		if (arguments.length < 1) {
+			throw '\'do\' requires at least one argument';
 		}
-		symbols[arguments[0]] = evaluate(arguments[1]);
+		return arguments[arguments.length - 1];
 	};
 	
 	symbols['head'] = function () {
