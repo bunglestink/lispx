@@ -44,28 +44,28 @@
 	};
 	
 	symbols['head'] = function () {
-		if (arguments.length !== 1 || !Array.isArray || Array.isArray(arguments[0])) {
+		if (arguments.length !== 1 || !Array.isArray(arguments[0])) {
 			throw 'head requires one list as an argument';
 		}
 		return arguments[0][0];
 	};
 	symbols['tail'] = function () {
-		if (arguments.length !== 1 || !Array.isArray || Array.isArray(arguments[0])) {
+		if (arguments.length !== 1 || !Array.isArray(arguments[0])) {
 			throw 'tail requires one list as an argument';
 		}
 		return arguments[0].slice(1);
 	};
 	symbols['last'] = function () {
-		if (arguments.length !== 1 || !Array.isArray || Array.isArray(arguments[0])) {
+		if (arguments.length !== 1 || !Array.isArray(arguments[0])) {
 			throw 'last requires one list as an argument';
 		}
-		return arguments[arguments.length - 1];
+		return arguments[0][arguments.length - 1];
 	};
 	symbols['front'] = function () {
-		if (arguments.length !== 1 || !Array.isArray || Array.isArray(arguments[0])) {
+		if (arguments.length !== 1 || !Array.isArray(arguments[0])) {
 			throw 'head requires one list as an argument';
 		}
-		return arguments.slice(0, arguments.length - 1);
+		return arguments[0].slice(0, arguments.length - 1);
 	};
 	
 	symbols['+'] = function () {
@@ -96,6 +96,52 @@
 			throw '\'/\' requires exactly two arguments.'; 
 		}
 		return arguments[0] / arguments[1];
+	};
+	
+	// TODO: allow comparison functions to accept multiple args
+	symbols['='] = function () {
+		if (arguments.length !== 2) {
+			throw '\'=\' requires exactly two arguments';
+		}
+		return arguments[0] === arguments[1];
+	};
+	symbols['>'] = function () {
+		if (arguments.length !== 2) {
+			throw '\'>\' requires exactly two arguments';
+		}
+		return arguments[0] > arguments[1];
+	};
+	symbols['<'] = function () {
+		if (arguments.length !== 2) {
+			throw '\'<\' requires exactly two arguments';
+		}
+		return arguments[0] < arguments[1];
+	};
+	symbols['>='] = function () {
+		if (arguments.length !== 2) {
+			throw '\'>=\' requires exactly two arguments';
+		}
+		return arguments[0] >= arguments[1];
+	};
+	symbols['<='] = function () {
+		if (arguments.length !== 2) {
+			throw '\'<=\' requires exactly two arguments';
+		}
+		return arguments[0] <= arguments[1];
+	};
+	
+	// TODO: allow logic functions to accept multiple args
+	symbols['or'] = function () {
+		if (arguments.length !== 2) {
+			throw '\'<=\' requires exactly two arguments';
+		}
+		return arguments[0] || arguments[1];
+	};
+	symbols['and'] = function () {
+		if (arguments.length !== 2) {
+			throw '\'<=\' requires exactly two arguments';
+		}
+		return arguments[0] && arguments[1];
 	};
 	
 	
@@ -327,6 +373,13 @@
 		return false;
 	}
 	
+	function isLispBool(val) {
+		return val === 'true' || val === 'false';
+	}
+	function toLispBool(val) {
+		return val === 'true';
+	}
+	
 	
 	// input: parsed syntax tree of the source code
 	// output: list of evaluated expressions
@@ -339,6 +392,10 @@
 			// number, string, or variable
 			if (isLispNumber(syntaxTree)) {
 				return Number(syntaxTree);
+			}
+			
+			if (isLispBool(syntaxTree)) {
+				return toLispBool(syntaxTree);
 			}
 			
 			if (isLispString(syntaxTree)) {
