@@ -13,6 +13,26 @@
 	};
 	
 	
+	// macros: 
+	// input: list of their tail
+	// output: new list
+	macros = { };
+	macros['def'] = function (tail) {
+		if (arguments.length !== 1) {
+			throw 'def requires exactly two arguments.';
+		}
+		return [
+			function () { 
+				if (arguments.length !== 1) {
+					throw 'invalid argument count for def.';
+				}
+				symbols[tail[0]] = arguments[0];
+				return arguments[0];
+			},
+			tail[1]
+		];
+	};
+	
 	// built in symbols
 	symbols = { };
 	
@@ -222,23 +242,60 @@
 	};
 	
 	
+	// input: syntax tree
+	// output: syntax tree w/ macros expanded
+	function macroExpand(syntaxTree) {
+		var i;
+		
+		for (i = 0; i < syntaxTree.length; i++) {
+			if (Array.isArray(syntaxTree[i])) {
+				syntaxTree[i] = macroExpand(syntaxTree[i]);
+			}
+		}
+		
+		if (syntaxTree.length > 0 && typeof macros[syntaxTree[0]] === 'function') {
+			return macros[syntaxTree[0]](syntaxTree.splice(1));
+		}
+		return syntaxTree;
+	};
+	
 	
 	function isFunction (token) {
+		// macros generated functions:
+		if (typeof token === 'function') {
+			return true;
+		}
+		
+		// regular lisp functions:
 		if (typeof symbols[token] === 'function') {
 			return true;
 		}
+		
+		// DOM/JS functions
 		// TODO: alternative to this to access DOM API
-		if (typeof eval(token) === 'function') {
-			return true;
+		try {
+			if (typeof eval(token) === 'function') {
+				return true;
+			}
+		}
+		catch (e) {
+			return false;
 		}
 		return false;
 	}
 	
 	function applyFunction (token, args) {
+		// macro generated function
+		if (typeof token === 'function') {
+			return token.apply(null, args);
+		}
+		
+		// lisp function: 
 		if (typeof symbols[token] === 'function') {
 			return symbols[token].apply(null, args);
 		}
 		
+		/// 'native' function
 		// TODO: fix 'this' scoping, dont use eval if possible... native function translation
 		return eval(token+'.apply(null, args)');
 	}
@@ -350,7 +407,7 @@
 	// input: some lisp code
 	// output: the result of the last expression in the code
 	lispx.execute = function (input) {
-		var lexed, parsed, evaluated, display;
+		var lexed, parsed, expanded, evaluated, display;
 		
 		try {
 			lexed = lex(input);
@@ -367,7 +424,14 @@
 		}
 		
 		try {
-			evaluated = evaluate(parsed);
+			expanded = macroExpand(parsed);
+		}
+		catch (e) {
+			return 'Macro Expansion Error: ' + e;
+		}
+		
+		try {
+			evaluated = evaluate(expanded);
 		}
 		catch (e) {
 			return 'Evaluation Error: ' + e;
