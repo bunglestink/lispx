@@ -28,6 +28,15 @@
 		return result;
 	}	
 	
+	function getBaseObject(objectMethod) {
+		var lastIndex = objectMethod.lastIndexOf('.');
+		
+		if (lastIndex === -1) {
+			return null;
+		}
+		return objectMethod.substring(0, lastIndex);
+	}
+	
 	// macros: 
 	// input: list of their tail
 	// output: new list
@@ -454,7 +463,7 @@
 		
 		/// 'native' function
 		// TODO: fix 'this' scoping, dont use eval if possible... native function translation
-		return eval(token+'.apply(null, args)');
+		return eval(token+'.apply('+getBaseObject(token)+', args)');
 	}
 	
 	function isLispNumber(val) {
