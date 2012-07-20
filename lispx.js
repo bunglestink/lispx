@@ -138,6 +138,32 @@
 		lambda.string = output(tail[1]);
 		return lambda;
 	};
+	macros['let'] = function (tail) {
+		var newSyntax = [],
+			vars = [],
+			vals = [],
+			i, binding;
+		
+		if (tail.length !== 2) {
+			throw '\'let\' requires two arguments: binding list and body expression';
+		}
+		
+		for (i = 0; i < tail[0].length; i++) {
+			binding = tail[0][i];
+			if (binding.length !== 2) {
+				throw '\'let\' requires all binding arguments to contain a symbol and a value';
+			}
+			vars.push(binding[0]);
+			vals.push(binding[1]);
+		}
+		
+		newSyntax =  [['lambda', vars, tail[1]]];
+		for (i = 0; i < vals.length; i++) {
+			newSyntax.push(vals[i]);
+		}
+		
+		return macroExpand(newSyntax);
+	};
 	
 	// built in symbols
 	symbols = { };
