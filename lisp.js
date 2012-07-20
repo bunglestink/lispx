@@ -61,8 +61,11 @@
 	// output: new list
 	macros = { };
 	macros['def'] = function (tail) {
-		if (arguments.length !== 1) {
-			throw 'def requires exactly two arguments.';
+		if (tail.length !== 2) {
+			throw '\'def\' requires exactly two arguments.';
+		}
+		if (tail[0].indexOf('.') !== -1) {
+			throw 'symbols cannot contain \'.\'';
 		}
 		return [
 			function () { 
