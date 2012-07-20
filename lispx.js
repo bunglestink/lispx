@@ -1,7 +1,7 @@
 ;
 (function (window) {
 	
-	var lispx = { },
+	var lisp = { },
 		scopeStack = [ ],
 		macros, symbols;
 	
@@ -656,7 +656,7 @@
 	
 	// input: some lisp code
 	// output: the result of the last expression in the code
-	lispx.execute = function (input) {
+	lisp.execute = function (input) {
 		var lexed, parsed, expanded, evaluated, display;
 		
 		try {
@@ -697,6 +697,6 @@
 		return display;
 	};
 	
-	window.LISPX = lispx;
+	window.LISP = lisp;
 	
  }(window));

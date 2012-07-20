@@ -11,7 +11,7 @@ window.onload = function () {
 		execute = document.getElementById('execute');
 	
 	execute.onclick = function () {
-		output.value = output.value +  LISPX.execute(input.value) + '\n';
+		output.value = output.value +  LISP.execute(input.value) + '\n';
 	};
 };
 </script>
@@ -24,7 +24,7 @@ window.onload = function () {
 	
 	(set execute.onclick (lambda ()
 	  (set output.value
-	    (+ output.value (LISPX.execute input.value) '\n'))))))
+	    (+ output.value (LISP.execute input.value) '\n'))))))
 </script>
 </head>
 
