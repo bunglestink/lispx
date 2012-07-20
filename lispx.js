@@ -26,7 +26,26 @@
 		}
 		
 		return result;
-	}	
+	}
+	
+	// TODO: refactor this out...
+	function copyListRawString(list) {
+		var result = [],
+			i;
+		
+		if (!Array.isArray(list)) {
+			if (isLispString(list)) {
+				return toRawString(list);
+			}
+			return list;
+		}
+		
+		for (i = 0; i < list.length; i++) {
+			result.push(copyListRawString(list[i]));
+		}
+		
+		return result;
+	}
 	
 	function getBaseObject(objectMethod) {
 		var lastIndex = objectMethod.lastIndexOf('.');
@@ -477,6 +496,8 @@
 	}
 	
 	function applyFunction (token, args) {
+		var rawArgs;
+		
 		// macro generated function
 		if (typeof token === 'function') {
 			return token.apply(null, args);
@@ -487,9 +508,10 @@
 			return symbols[token].apply(null, args);
 		}
 		
-		/// 'native' function
-		// TODO: fix 'this' scoping, dont use eval if possible... native function translation
-		return eval(token+'.apply('+getBaseObject(token)+', args)');
+		// 'native' function
+		// TODO: dont use eval if possible... native function translation
+		rawArgs = copyListRawString(args);
+		return eval(token+'.apply('+getBaseObject(token)+', rawArgs)');
 	}
 	
 	function isLispNumber(val) {
@@ -505,9 +527,12 @@
 		if (typeof val !== 'string') {
 			return false;
 		}
+		if (val.length < 2) {
+			return false;
+		}
 		
-		first = val.substring(0, 1);
-		last = val.substring(val.length - 1);
+		first = val[0];
+		last = val[val.length - 1];
 		
 		if (first === '"' && last === '"') {
 			return true;
@@ -517,6 +542,12 @@
 		}
 		
 		return false;
+	}
+	function toRawString(val) {
+		if (!isLispString(val)) {
+			throw 'can only convert Lisp strings to raw strings';
+		}
+		return val.substring(1, val.length - 1);
 	}
 	
 	function isLispBool(val) {
