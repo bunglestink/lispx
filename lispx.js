@@ -2,6 +2,7 @@
 (function (window) {
 	
 	var lispx = { },
+		scopeStack = [ ],
 		macros, symbols;
 	
 	function foldLeft(list, init,  lambda) {
@@ -10,8 +11,22 @@
 			init = lambda(init, list[i]);
 		}
 		return init;
-	};
+	}
 	
+	function copyList(list) {
+		var result = [],
+			i;
+		
+		if (!Array.isArray(list)) {
+			return list;
+		}
+		
+		for (i = 0; i < list.length; i++) {
+			result.push(copyList(list[i]));
+		}
+		
+		return result;
+	}	
 	
 	// macros: 
 	// input: list of their tail
@@ -61,15 +76,85 @@
 			tail[0]
 		];
 	};
+	macros['set'] = function (tail) {
+		if (tail.length !== 2) {
+			throw '\'set\' requires exactly two arguments';
+		}
+		
+		return [
+			function () {
+				if (typeof symbols[tail[0]] !== 'undefined') {
+					symbols[tail[0]] = arguments[0];
+					return arguments[0];
+				}
+				// TODO: remove eval evil...
+				else if (typeof eval(tail[0]) !== 'undefined') {
+					eval(tail[0] + ' = '  + arguments[0]);
+					return arguments[0];
+				}
+				throw 'symbol \'' + tail[0] + '\' not found';
+			},
+			tail[1]
+		];
+	};
+	macros['lambda'] = function (tail) {
+		var args, body, lambda;
+		
+		if (tail.length !== 2) {
+			throw '\'lambda\' requires two arguments: argument list and body expression';
+		}
+		args = tail[0];
+		body = tail[1];
+		
+		var lambda = function() {
+			var lambdaArgs = arguments,
+				scope = { },
+				expression = copyList(body),
+				result, i;
+			
+			if (args.length !== lambdaArgs.length) {
+				throw 'argument length doesn\'t match';
+			}
+			
+			scopeStack.push(scope);
+			var i;
+			for (i = 0; i < args.length; i++) {
+				scope[args[i]] = lambdaArgs[i];
+			}
+				
+			result = evaluate(macroExpand(expression));
+			
+			scopeStack.pop();
+			
+			return result;
+		};
+		lambda.string = output(tail[1]);
+		return lambda;
+	};
 	
 	// built in symbols
 	symbols = { };
-	
 	symbols['do'] = function () {
 		if (arguments.length < 1) {
 			throw '\'do\' requires at least one argument';
 		}
 		return arguments[arguments.length - 1];
+	};
+	symbols['eval'] = function () {
+		var i, expression, lastResult;
+		
+		for (i = 0; i < arguments.length; i++) {
+			expression = arguments[i];
+			if (typeof expression !== 'string') {
+				throw '\'eval\' only accepts string parameters';
+			}
+			if (expression.length < 3) {
+				throw '\'eval\' requires an expression as a parameter';
+			}
+			expression = expression.substring(1, expression.length - 1);
+			lastResult = evaluate(macroExpand(parse(lex(expression))));
+		}
+		return lastResult[lastResult.length - 1];
 	};
 	
 	symbols['head'] = function () {
@@ -264,7 +349,7 @@
 			currentExpression = null, 
 			tokenIndex, currentToken, prevExpression;
 		
-		if (Array.isArray && !Array.isArray(tokens)) {
+		if (!Array.isArray(tokens)) {
 			throw 'input must be an array of tokens';
 		}
 		
@@ -415,9 +500,12 @@
 	// strategy: look at first element in each list.  if a function, evaluate sub-pieces, then evaluate whole
 	function evaluate (syntaxTree) {
 		var index = 0,
-			num, symbolType;
+			num, symbolType, wasFunction;
 		
 		if (!Array.isArray(syntaxTree)) {
+			// check primitives, scopeStack, then symbol table
+			var i;
+			
 			// number, string, or variable
 			if (isLispNumber(syntaxTree)) {
 				return Number(syntaxTree);
@@ -427,8 +515,14 @@
 				return toLispBool(syntaxTree);
 			}
 			
-			if (isLispString(syntaxTree)) {
+			if (isLispString(syntaxTree) || isFunction(syntaxTree)) {
 				return syntaxTree;
+			}
+			
+			for (i = scopeStack.length - 1; i >= 0; i++) {
+				if (typeof scopeStack[i][syntaxTree] !== 'undefined') {
+					return scopeStack[i][syntaxTree];
+				}
 			}
 			
 			if (!symbols[syntaxTree]) {
@@ -450,7 +544,8 @@
 			return syntaxTree;
 		}
 		
-		if (isFunction(syntaxTree[0])) {
+		wasFunction = isFunction(syntaxTree[0]);
+		if (wasFunction) {
 			index = 1;
 		}
 		
@@ -458,7 +553,7 @@
 			syntaxTree[index] = evaluate(syntaxTree[index]);
 		}
 		
-		if (isFunction(syntaxTree[0])) {
+		if (wasFunction) {
 			return applyFunction(syntaxTree[0], syntaxTree.slice(1));
 		}
 		return syntaxTree;
@@ -470,6 +565,12 @@
 	function output (val) {
 		var result = '', i;
 		
+		if (typeof val === 'function') {
+			if (typeof val.string !== 'undefined') {
+				return val.string;
+			}
+			return '#lambda';
+		}
 		if (!Array.isArray(val)) {
 			return val.toString();
 		}
