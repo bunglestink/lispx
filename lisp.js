@@ -558,6 +558,7 @@
 	}
 	
 	
+	// TODO: make this not mutate syntaxTree arg...
 	// input: parsed syntax tree of the source code
 	// output: list of evaluated expressions
 	// strategy: look at first element in each list.  if a function, evaluate sub-pieces, then evaluate whole
@@ -634,6 +635,10 @@
 			}
 			return '#lambda';
 		}
+		if (typeof val === 'undefined') {
+			return null;
+		}
+		
 		if (!Array.isArray(val)) {
 			return val.toString();
 		}

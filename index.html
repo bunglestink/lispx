@@ -1,4 +1,4 @@
-<!doctype>
+<!doctype html>
 <html>
 <head>
 <title>cheese</title>
@@ -24,21 +24,105 @@ window.onload = function () {
 	
 	(set execute.onclick (lambda ()
 	  (set output.value
-	    (+ output.value (LISP.execute input.value) '\n'))))))
+	    (+ output.value (LISP.execute input.value) '\n')))))))
 </script>
 </head>
 
+<style>
+* {
+	margin: 0;
+	padding: 0;
+}
+body { 
+	font-family: arial, helvetica, sans-serif; 
+}
+p {
+  margin: 10px 0 10px; 
+}
+li {
+	font-weight: bold;
+	margin: 0 0 0 30px;
+}
+.documentation {
+	background-color: #eee;
+	float: left;
+	padding: 10px;
+	width: 300px;
+}
+
+.lisp-land > div {
+	display: inline-block;
+	vertical-align: top;
+	width: 450px;
+}
+</style>
 <body>
-	<div>
-		<h3>Input</h3>
-		<textarea id="input" cols="80" rows="15"></textarea>
+	<div class="documentation">
+		<h1>JavaScript Lisp</h1>
+		<hr />
+		<p>This is a simple implemenation of Lisp in JavaScript.  This was a "blind go" at implementing a Lisp runtime system without looking at existing implementations.  This implemenation contains the following built in: </p>
+		<ul>
+			Macros:
+			<li>def</li>
+			<li>if</li>
+			<li>set</li>
+			<li>lambda</li>
+			<li>let</li>
+			
+			Functions:
+			<li>do</li>
+			<li>eval</li>
+			
+			List Functions:
+			<li>head</li>
+			<li>tail</li>
+			<li>last</li>
+			<li>front</li>
+			
+			Operator Functions:
+			<li>+</li>
+			<li>-</li>
+			<li>*</li>
+			<li>/</li>
+			
+			Equality Functions: 
+			<li>=</li>
+			<li>&gt;</li>
+			<li>&lt;</li>
+			<li>&gt;=</li>
+			<li>&lt;=</li>
+			
+			Logical Functions: 
+			<li>or</li>
+			<li>and</li>
+		</ul>
+		<hr />
+		<h3>Example Code:</h3>
+		<p>This will alert the first 10 fibinocci numbers</p>
+		<pre>(def fib (lambda (x)
+  (if (&lt;= x 2)
+    1
+    (+ (fib (- x 1)) (fib (- x 2))))))
+
+(def fibToTen (lambda (start)
+  (if (&lt;= start 10)
+    (do
+      (alert (fib start))
+      (fibToTen (+ start 1)))
+    "done")))
+
+(fibToTen 1)</pre>
 	</div>
-	<div>
-		<button id="execute">Execute</button>
-	</div>
-	<div>
-		<h3>Output</h3>
-		<textarea id="output" cols="80" rows="15"></textarea>
+	<div class="lisp-land">
+		<div>
+			<h3>Input</h3>
+			<textarea id="input" cols="50" rows="40"></textarea>
+			<button id="execute">Execute</button>
+		</div>
+		<div>
+			<h3>Output</h3>
+			<textarea id="output" cols="50" rows="40" readonly="readonly"></textarea>
+		</div>
 	</div>
 </body>
 </html>
