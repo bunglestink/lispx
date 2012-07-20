@@ -66,10 +66,10 @@
 					throw '\'if\' requires condition';
 				}
 				if (arguments[0] === true) {
-					return evaluate(thenExpression);
+					return evaluate(copyList(thenExpression));
 				}
 				else if (elseExpression) {
-					return evaluate(elseExpression);
+					return evaluate(copyList(elseExpression));
 				}
 				return 'null';
 			},
@@ -116,14 +116,12 @@
 				throw 'argument length doesn\'t match';
 			}
 			
-			scopeStack.push(scope);
-			var i;
 			for (i = 0; i < args.length; i++) {
 				scope[args[i]] = lambdaArgs[i];
 			}
-				
-			result = evaluate(macroExpand(expression));
 			
+			scopeStack.push(scope);
+			result = evaluate(macroExpand(expression));
 			scopeStack.pop();
 			
 			return result;
@@ -257,7 +255,6 @@
 		}
 		return arguments[0] && arguments[1];
 	};
-	
 	
 	// input: string of lisp code
 	// output: list of tokens
