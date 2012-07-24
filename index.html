@@ -64,6 +64,7 @@ li {
 		<ul>
 			Macros:
 			<li>def</li>
+			<li>defun</li>
 			<li>if</li>
 			<li>set</li>
 			<li>lambda</li>
@@ -101,23 +102,23 @@ li {
 		<hr />
 		<h3>Example Code:</h3>
 		<p>This will alert the first 10 fibinocci numbers</p>
-		<pre>(def fib (lambda (x)
+		<pre>(defun fib (x)
   (if (&lt;= x 2)
     1
-    (+ (fib (- x 1)) (fib (- x 2))))))
+    (+ (fib (- x 1)) (fib (- x 2)))))
 
-(def fibToTen (lambda (start)
+(defun fibToTen (start)
   (if (&lt;= start 10)
     (do
       (alert (fib start))
       (fibToTen (+ start 1)))
-    "done")))
+    "done"))
 
 (fibToTen 1)</pre>
 		<hr />
 		<p>The below illustrates returning a function from a function</p>
-		<pre>(def create-addone (lambda () 
-  (lambda (x) (+ 1 x))))
+		<pre>(defun create-addone () 
+  (lambda (x) (+ 1 x)))
 
 (def addone (create-addone))
 
