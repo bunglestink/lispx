@@ -87,6 +87,7 @@ li {
 			
 			Equality Functions: 
 			<li>=</li>
+			<li>!=</li>
 			<li>&gt;</li>
 			<li>&lt;</li>
 			<li>&gt;=</li>
@@ -95,6 +96,7 @@ li {
 			Logical Functions: 
 			<li>or</li>
 			<li>and</li>
+			<li>not</li>
 		</ul>
 		<hr />
 		<h3>Example Code:</h3>
@@ -112,6 +114,14 @@ li {
     "done")))
 
 (fibToTen 1)</pre>
+		<hr />
+		<p>The below illustrates returning a function from a function</p>
+		<pre>(def create-addone (lambda () 
+  (lambda (x) (+ 1 x))))
+
+(def addone (create-addone))
+
+((addone 5) (addone 100) (addone -5))</pre>
 	</div>
 	<div class="lisp-land">
 		<div>

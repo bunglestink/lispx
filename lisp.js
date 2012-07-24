@@ -286,29 +286,17 @@
 		}
 		return arguments[0] < arguments[1];
 	};
-	symbols['>='] = function () {
-		if (arguments.length !== 2) {
-			throw '\'>=\' requires exactly two arguments';
-		}
-		return arguments[0] >= arguments[1];
-	};
-	symbols['<='] = function () {
-		if (arguments.length !== 2) {
-			throw '\'<=\' requires exactly two arguments';
-		}
-		return arguments[0] <= arguments[1];
-	};
 	
 	// TODO: allow logic functions to accept multiple args
 	symbols['or'] = function () {
 		if (arguments.length !== 2) {
-			throw '\'<=\' requires exactly two arguments';
+			throw '\'or\' requires exactly two arguments';
 		}
 		return arguments[0] || arguments[1];
 	};
 	symbols['and'] = function () {
 		if (arguments.length !== 2) {
-			throw '\'<=\' requires exactly two arguments';
+			throw '\'and\' requires exactly two arguments';
 		}
 		return arguments[0] && arguments[1];
 	};
@@ -704,6 +692,14 @@
 		
 		return display;
 	};
+	
+	
+	lisp.execute(
+		'(def not (lambda (a) (= false a))) ' +
+		'(def != (lambda (a b) (not (= a b)))) ' +
+		'(def <= (lambda (a b) (or (< a b) (= a b)))) ' +
+		'(def >= (lambda (a b) (or (> a b) (= a b)))) '
+	);
 	
 	window.LISP = lisp;
 	
