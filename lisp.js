@@ -802,6 +802,15 @@
 		return display;
 	};
 	
+	lisp.executeScripts = function () {
+		var scripts, i;
+		
+		scripts = document.querySelectorAll("script[type='text/lisp']");
+		for (i = 0; i < scripts.length; i++) {
+			lisp.execute(scripts[i].innerHTML);
+		}
+	};
+	
 	lisp.execute(
 		'(defun not (a) (= false a)) ' +
 		'(defun != (a b) (not (= a b))) ' +
