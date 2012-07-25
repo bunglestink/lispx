@@ -156,6 +156,52 @@
 			tail[1]
 		];
 	};
+	// TODO: decide if get is a good route for properties or not...
+	macros['get'] = function (tail) {
+		if (tail.length !== 1) {
+			throw '\'get\' requires exactly one argument';
+		}
+		
+		return [
+			function () {
+				var i, dotIndex, tokens, target;
+				
+				// split symbol into tokens
+				dotIndex = tail[0].indexOf('.');
+				tokens = dotIndex === -1 ? tail[0] : tail[0].split('.');
+				
+				// local scope, global, then JS scope
+				// base token found, recurse through property chain and set
+				for (i = scopeStack.length - 1; i >= 0; i--) {
+					
+					if (typeof scopeStack[i][tokens[0]] !== 'undefined') {
+						
+						target = scopeStack[i][tokens[0]];
+						for (i = 1; i < tokens.length - 3; i++) {
+							target = target[tokens[i]];
+						}
+						return target[tokens[i]];
+					}
+				}
+				
+				if (typeof symbols[tokens[0]] !== 'undefined') {
+					target = symbols[tokens[0]];
+					for (i = 1; i < tokens.length - 3; i++) {
+						target = target[tokens[i]];
+					}
+					return target[tokens[i]];
+				}
+				// TODO: remove eval evil...
+				else try {
+					if (typeof eval(tail[0]) !== 'undefined') {
+						return eval(tail[0]);
+					}
+				} catch (e) { }
+				
+				throw 'symbol \'' + tail[0] + '\' not found';
+			}
+		];
+	};
 	macros['lambda'] = function (tail) {
 		var args, body, lambda;
 		
