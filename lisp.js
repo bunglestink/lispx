@@ -845,6 +845,10 @@
 			return 'Output Error: ' + e;
 		}
 		
+		if (typeof lisp.stdOut === 'function') {
+			lisp.stdOut(display);
+		}
+		
 		return display;
 	};
 	
@@ -856,6 +860,12 @@
 			lisp.execute(scripts[i].innerHTML);
 		}
 	};
+	
+	lisp.stdOut = function (text) {
+		if (console && typeof console.log === 'function') {
+			console.log(text);
+		}
+	}
 	
 	lisp.execute(
 		'(defun not (a) (= false a)) ' +

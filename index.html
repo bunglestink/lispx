@@ -4,27 +4,18 @@
 <title>cheese</title>
 <script src="lisp.js" type="text/javascript"></script>
 <script>
-
-window.onload = function () {
-	var input = document.getElementById('input'),
-		output = document.getElementById('output'),
-		execute = document.getElementById('execute');
-	
-	execute.onclick = function () {
-		output.value = output.value +  LISP.execute(input.value) + '\n';
-	};
+window.onload = LISP.executeScripts;
+LISP.stdOut = function (text) {
+	var out = document.getElementById('output');
+	out.value = out.value + text + '\n';
 };
 </script>
 <script type="text/lisp">
-(set window.onload (lambda ()
-  (let (
-    (input (document.getElementById 'input'))
-	(output (document.getElementById 'output'))
-	(execute (document.getElementById 'execute')))
-	
-	(set execute.onclick (lambda ()
-	  (set output.value
-	    (+ output.value (LISP.execute input.value) '\n')))))))
+(let ((execute (document.getElementById 'execute')))
+  (set execute.onclick (lambda (e)
+   (let 
+    ((input (document.getElementById 'input')))
+    (LISP.execute (get input.value))))))
 </script>
 </head>
 
@@ -78,6 +69,7 @@ li:hover p {
 			<li>defun <p>(defun f p b) define a global function named f, with parameter names in list p, and a body of expression b.  shorthand for (def f (lambda p b))</li>
 			<li>if <p>(if e1 e2 [e3]) simple conditional branching.  If e1 evaluates true, e2 is evaluated, else, an optional e3 is evaluated.</p></li>
 			<li>set <p>(set s e) mutates the value of symbol s to the value of expression e.</p></li>
+			<li>get <p>(get s) evaluates object property s.</p></li>
 			<li>lambda <p> (lambda p b) the mighty lambda.  p is list of parameter names, b is body.</li>
 			<li>let <p>(let s b) Binds all symbols in s for scope of statement, evaluating b.</p></li>
 			<li>create-object <p>(create-object [s])  the gateway to JS object creation.  Optional s list initializes object parameters, syntax like a let statement.</p></li>
