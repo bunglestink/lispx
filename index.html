@@ -55,6 +55,17 @@ li {
 	vertical-align: top;
 	width: 450px;
 }
+li p {
+	display:none;
+}
+li:hover p {
+	border: solid 1px #000;
+	background-color: #ffc;
+	display: inline-block;
+	position: absolute;
+	width: 300px;
+	height: 100px;
+}
 </style>
 <body>
 	<div class="documentation">
@@ -63,22 +74,23 @@ li {
 		<p>This is a simple implemenation of Lisp in JavaScript.  This was a "blind go" at implementing a Lisp runtime system without looking at existing implementations.  This implemenation contains the following built in: </p>
 		<ul>
 			Macros:
-			<li>def</li>
-			<li>defun</li>
-			<li>if</li>
-			<li>set</li>
-			<li>lambda</li>
-			<li>let</li>
+			<li>def <p>(def s e) define a global symbol named s with value of expression e</p></li>
+			<li>defun <p>(defun f p b) define a global function named f, with parameter names in list p, and a body of expression b.  shorthand for (def f (lambda p b))</li>
+			<li>if <p>(if e1 e2 [e3]) simple conditional branching.  If e1 evaluates true, e2 is evaluated, else, an optional e3 is evaluated.</p></li>
+			<li>set <p>(set s e) mutates the value of symbol s to the value of expression e.</p></li>
+			<li>lambda <p> (lambda p b) the mighty lambda.  p is list of parameter names, b is body.</li>
+			<li>let <p>(let s b) Binds all symbols in s for scope of statement, evaluating b.</p></li>
+			<li>create-object <p>(create-object [s])  the gateway to JS object creation.  Optional s list initializes object parameters, syntax like a let statement.</p></li>
 			
 			Functions:
-			<li>do</li>
-			<li>eval</li>
+			<li>do <p>(do e1 [e2 e3 ... en]) evaluates all expressions in order, returning the last expression result.</p></li>
+			<li>eval <p>(eval str) evaluates a string str of lisp code.</p></li>
 			
 			List Functions:
-			<li>head</li>
-			<li>tail</li>
-			<li>last</li>
-			<li>front</li>
+			<li>head <p>(head l) returns the first element of the list l</p></li>
+			<li>tail <p>(tail l) returns the list of all elements of list l, except the first</li>
+			<li>last <p>(last l) returns the last element in list l</p></li>
+			<li>front <p>(front l) returns the list of all elements of list l, except the last</li>
 			
 			Operator Functions:
 			<li>+</li>
@@ -123,6 +135,16 @@ li {
 (def addone (create-addone))
 
 ((addone 5) (addone 100) (addone -5))</pre>
+		<hr />
+		<p>Create a local object tom w/ name, age, and son properties</p>
+		<pre>(let 
+  ((tom (create-object 
+    ((name "Tom") 
+    (age 33)
+    (son (create-object 
+      ((name "mike")
+      (age 6))))))))
+  (JSON.stringify tom))</pre>
 	</div>
 	<div class="lisp-land">
 		<div>
