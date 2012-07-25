@@ -186,6 +186,14 @@
 		
 		return macroExpand(newSyntax);
 	};
+	macros['defun'] = function (tail) {
+		var newSyntax;
+		if (tail.length !== 3) {
+			throw '\'defun\' requires 3 arguments: the function symbol name, the argument list, and the body';
+		}
+		newSyntax = ['def', tail[0], ['lambda', tail[1], tail[2]]];
+		return macroExpand(newSyntax);
+	};
 	
 	// built in symbols
 	symbols = { };
@@ -286,29 +294,17 @@
 		}
 		return arguments[0] < arguments[1];
 	};
-	symbols['>='] = function () {
-		if (arguments.length !== 2) {
-			throw '\'>=\' requires exactly two arguments';
-		}
-		return arguments[0] >= arguments[1];
-	};
-	symbols['<='] = function () {
-		if (arguments.length !== 2) {
-			throw '\'<=\' requires exactly two arguments';
-		}
-		return arguments[0] <= arguments[1];
-	};
 	
 	// TODO: allow logic functions to accept multiple args
 	symbols['or'] = function () {
 		if (arguments.length !== 2) {
-			throw '\'<=\' requires exactly two arguments';
+			throw '\'or\' requires exactly two arguments';
 		}
 		return arguments[0] || arguments[1];
 	};
 	symbols['and'] = function () {
 		if (arguments.length !== 2) {
-			throw '\'<=\' requires exactly two arguments';
+			throw '\'and\' requires exactly two arguments';
 		}
 		return arguments[0] && arguments[1];
 	};
@@ -704,6 +700,13 @@
 		
 		return display;
 	};
+	
+	lisp.execute(
+		'(defun not (a) (= false a)) ' +
+		'(defun != (a b) (not (= a b))) ' +
+		'(defun <= (a b) (or (< a b) (= a b))) ' +
+		'(defun >= (a b) (or (> a b) (= a b))) '
+	);
 	
 	window.LISP = lisp;
 	
