@@ -114,15 +114,43 @@
 		
 		return [
 			function () {
-				if (typeof symbols[tail[0]] !== 'undefined') {
-					symbols[tail[0]] = arguments[0];
+				var i, j, dotIndex, tokens, target;
+				
+				// split symbol into tokens
+				dotIndex = tail[0].indexOf('.');
+				tokens = dotIndex === -1 ? tail[0] : tail[0].split('.');
+				
+				// local scope, global, then JS scope
+				// base token found, recurse through property chain and set
+				for (i = scopeStack.length - 1; i >= 0; i--) {
+					
+					if (typeof scopeStack[i][tokens[0]] !== 'undefined') {
+						
+						target = scopeStack[i][tokens[0]];
+						for (i = 1; i < tokens.length - 3; i++) {
+							target = target[tokens[i]];
+						}
+						target[tokens[i]] = arguments[0];
+						return arguments[0];
+					}
+				}
+				
+				if (typeof symbols[tokens[0]] !== 'undefined') {
+					target = symbols[tokens[0]];
+					for (i = 1; i < tokens.length - 3; i++) {
+						target = target[tokens[i]];
+					}
+					target[tokens[i]] = arguments[0];
 					return arguments[0];
 				}
 				// TODO: remove eval evil...
-				else if (typeof eval(tail[0]) !== 'undefined') {
-					eval(tail[0] + ' = '  + arguments[0]);
-					return arguments[0];
-				}
+				else try {
+					if (typeof eval(tail[0]) !== 'undefined') {
+						eval(tail[0] + ' = '  + arguments[0]);
+						return arguments[0];
+					}
+				} catch (e) { }
+				
 				throw 'symbol \'' + tail[0] + '\' not found';
 			},
 			tail[1]
@@ -193,6 +221,35 @@
 		}
 		newSyntax = ['def', tail[0], ['lambda', tail[1], tail[2]]];
 		return macroExpand(newSyntax);
+	};
+	macros['create-object'] = function (tail) {
+		var object = {};
+		switch (tail.length) {
+			case 0:
+				return object;
+			
+			case 1:
+				return [
+					function () {
+						var i, property;
+						
+						if (!Array.isArray(tail[0])) {
+							throw '\'create-object\' requires one list parameter';
+						}
+						for (i = 0; i < tail[0].length; i++) {
+							property = tail[0][i];
+							if (property.length !== 2) {
+								throw 'each property in create-object list argument must contain a name and value';
+							}
+							object[property[0]] = evaluate(macroExpand(property[1]));
+						}
+						return object;
+					}
+				];
+			
+			default:
+				throw '\'create-object\' requires 0 or 1 parameters';
+		}
 	};
 	
 	// built in symbols
@@ -493,6 +550,36 @@
 		}
 		return false;
 	}
+	function isObject (token) {
+		if (typeof token === 'object') {
+			return true;
+		}
+		if (typeof symbols[token] === 'object') {
+			return true;
+		}
+		try {
+			if (typeof eval(token) === 'object') {
+				return true;
+			}
+		}
+		catch (e) {
+			return false;
+		}
+		return false;
+	}
+	function toObject (token) {
+		if (typeof token === 'object') {
+			return token;
+		}
+		if (typeof symbols[token] === 'object') {
+			return symbols[token];
+		}
+		try {
+			return eval(token);
+		} catch (e) {
+			throw 'not an object...';
+		}
+	}
 	
 	function applyFunction (token, args) {
 		var rawArgs;
@@ -567,7 +654,7 @@
 		
 		if (!Array.isArray(syntaxTree)) {
 			// check primitives, scopeStack, then symbol table
-			var i;
+			var i, nativeCode;
 			
 			// number, string, or variable
 			if (isLispNumber(syntaxTree)) {
@@ -581,13 +668,27 @@
 			if (isLispString(syntaxTree) || isFunction(syntaxTree)) {
 				return syntaxTree;
 			}
+			if (isObject(syntaxTree)) {
+				return toObject(syntaxTree);
+			}
 			
-			for (i = scopeStack.length - 1; i >= 0; i++) {
+			for (i = scopeStack.length - 1; i >= 0; i--) {
 				if (typeof scopeStack[i][syntaxTree] !== 'undefined') {
 					return scopeStack[i][syntaxTree];
 				}
 			}
 			
+			try {
+				nativeCode = eval(syntaxTree);
+				switch (typeof nativeCode) {
+					case 'string': 
+						return ('"' + nativeCode + '"');
+					case 'number':
+					case 'object':
+					case 'function':
+						return nativeCode;
+				}
+			} catch (e) {}
 			if (!symbols[syntaxTree]) {
 				throw 'Unable to evaluate \'' + syntaxTree + '\'';
 			}	
