@@ -127,7 +127,7 @@
 					if (typeof scopeStack[i][tokens[0]] !== 'undefined') {
 						
 						target = scopeStack[i][tokens[0]];
-						for (i = 1; i < tokens.length - 3; i++) {
+						for (i = 1; i < tokens.length - 1; i++) {
 							target = target[tokens[i]];
 						}
 						target[tokens[i]] = arguments[0];
@@ -137,7 +137,7 @@
 				
 				if (typeof symbols[tokens[0]] !== 'undefined') {
 					target = symbols[tokens[0]];
-					for (i = 1; i < tokens.length - 3; i++) {
+					for (i = 1; i < tokens.length - 1; i++) {
 						target = target[tokens[i]];
 					}
 					target[tokens[i]] = arguments[0];
@@ -177,7 +177,7 @@
 					if (typeof scopeStack[i][tokens[0]] !== 'undefined') {
 						
 						target = scopeStack[i][tokens[0]];
-						for (i = 1; i < tokens.length - 3; i++) {
+						for (i = 1; i < tokens.length - 1; i++) {
 							target = target[tokens[i]];
 						}
 						return target[tokens[i]];
@@ -186,7 +186,7 @@
 				
 				if (typeof symbols[tokens[0]] !== 'undefined') {
 					target = symbols[tokens[0]];
-					for (i = 1; i < tokens.length - 3; i++) {
+					for (i = 1; i < tokens.length - 1; i++) {
 						target = target[tokens[i]];
 					}
 					return target[tokens[i]];
@@ -814,6 +814,7 @@
 			lexed = lex(input);
 		}
 		catch (e) {
+			lisp.stdOut('Lex Error: ' + e);
 			return 'Lex Error: ' + e;
 		}
 		
@@ -821,6 +822,7 @@
 			parsed = parse(lexed);
 		} 
 		catch (e) {
+			lisp.stdOut('Parse Error: ' + e);
 			return 'Parse Error: ' + e;
 		}
 		
@@ -828,6 +830,7 @@
 			expanded = macroExpand(parsed);
 		}
 		catch (e) {
+			lisp.stdOut('Macro Expansion Error: ' + e);
 			return 'Macro Expansion Error: ' + e;
 		}
 		
@@ -835,6 +838,7 @@
 			evaluated = evaluate(expanded);
 		}
 		catch (e) {
+			lisp.stdOut('Evaluation Error: ' + e);
 			return 'Evaluation Error: ' + e;
 		}
 		
@@ -842,12 +846,11 @@
 			display = output(evaluated[evaluated.length - 1]);
 		}
 		catch (e) {
+			lisp.stdOut('Output Error: ' + e);
 			return 'Output Error: ' + e;
 		}
 		
-		if (typeof lisp.stdOut === 'function') {
-			lisp.stdOut(display);
-		}
+		lisp.stdOut(display);
 		
 		return display;
 	};
